@@ -8,12 +8,12 @@ import (
 )
 
 type Config struct {
-	DB_HOST    		string `mapstructure:"DB_HOST"`
-	DB_NAME  		string `mapstructure:"DB_NAME"`
-	DB_USER  		string `mapstructure:"DB_USER"`
-	DB_PASSWORD 	string `mapstructure:"DB_PASSWORD"`
-	DB_PORT 		string `mapstructure:"DB_PORT"`
-	JWT_SECRET	string `mapstructure:"JWT_SECRET"`
+	DB_HOST          string `mapstructure:"DB_HOST"`
+	DB_NAME          string `mapstructure:"DB_NAME"`
+	DB_USER          string `mapstructure:"DB_USER"`
+	DB_PASSWORD      string `mapstructure:"DB_PASSWORD"`
+	DB_PORT          string `mapstructure:"DB_PORT"`
+	JWT_SECRET       string `mapstructure:"JWT_SECRET"`
 	SUPABASE_URL     string `mapstructure:"SUPABASE_URL"`
 	SUPABASE_API_KEY string `mapstructure:"SUPABASE_API_KEY"`
 	SUPABASE_BUCKET  string `mapstructure:"SUPABASE_BUCKET"`

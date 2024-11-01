@@ -84,13 +84,12 @@ func setupRoutes(app *fiber.App, db *sqlx.DB, cfg *configs.Config) {
 	tagRepo := pg.NewTagPGRepository(db)
 	tagService := usecases.ProvideTagService(tagRepo, cfg)
 	tagHandler := rest.NewTagHandler(tagService)
-	
 
 	// Routes
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World! test test")
 	})
-	
+
 	// Event Routes
 	app.Post(`/event`, eventHandler.CreateEvent)
 	app.Get(`/event`, eventHandler.GetAllEvent)
@@ -98,14 +97,13 @@ func setupRoutes(app *fiber.App, db *sqlx.DB, cfg *configs.Config) {
 	app.Get(`/event/user/:id`, eventHandler.GetByUserIDEvent)
 	app.Patch(`/event/:id`, eventHandler.UpdateEvent)
 
-
 	// Diary Routes
 	app.Post(`/diary`, diaryHandler.CreateDiary)
 	app.Get(`/diary`, diaryHandler.GetAllDiary)
 	app.Get(`/diary/date/:date`, diaryHandler.GetDiaryByDate)
 	app.Get(`/diary/:id`, diaryHandler.GetDiaryByID)
 	app.Get(`/diary/user/:userID`, diaryHandler.GetDiaryByUserID)
-	app.Patch(`/diary/:date`, diaryHandler.UpdateDiary)
+	app.Put(`/diary/:date`, diaryHandler.UpdateDiary)
 
 	// Tag Routes
 	app.Post(`/tag`, tagHandler.CreateTag)
