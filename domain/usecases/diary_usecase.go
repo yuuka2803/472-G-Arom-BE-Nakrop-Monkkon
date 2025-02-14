@@ -78,7 +78,7 @@ func (d *diaryService) UpdateDiary(ctx context.Context, req *requests.UpdateDiar
 		if err != nil {
 			return fmt.Errorf("failed to open file: %w", err)
 		}
-		defer file.Close() 
+		defer file.Close()
 
 		url, err := pg.UploadImageToSupabaseV2(file, fileHeader.Filename, d.config.SUPABASE_BUCKET, d.config)
 		if err != nil {

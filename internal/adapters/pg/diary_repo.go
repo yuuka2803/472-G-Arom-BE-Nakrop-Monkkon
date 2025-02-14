@@ -23,20 +23,20 @@ func (d *DiaryPGRepository) Create(ctx context.Context, req *requests.CreateDiar
 	var emotions pq.StringArray
 	var images pq.StringArray
 	err := d.db.QueryRowxContext(ctx, `INSERT INTO "DIARY" (
-    "Diary_Date", 
-    "Diary_Emotions", 
-    "Diary_Mood", 
-    "Diary_Description", 
-	"Diary_Images", 
+    "Diary_Date",
+    "Diary_Emotions",
+    "Diary_Mood",
+    "Diary_Description",
+	"Diary_Images",
     "User_Id"
-) 
-VALUES ($1, $2, $3, $4, $5 ,$6) 
-RETURNING 
-    "Diary_Id", 
-    "Diary_Date", 
-    "Diary_Emotions", 
-    "Diary_Mood", 
-    "Diary_Description", 
+)
+VALUES ($1, $2, $3, $4, $5 ,$6)
+RETURNING
+    "Diary_Id",
+    "Diary_Date",
+    "Diary_Emotions",
+    "Diary_Mood",
+    "Diary_Description",
 	"Diary_Images",
     "User_Id";
 `,
@@ -94,12 +94,12 @@ func (d *DiaryPGRepository) Update(ctx context.Context, req *requests.UpdateDiar
 	emotionsArrayU := "{" + strings.Join(req.Emotions, ",") + "}"
 	imagesArray := "{" + strings.Join(req.Images, ",") + "}"
 	_, err := d.db.ExecContext(ctx, `
-    UPDATE "DIARY" 
-    SET "Diary_Emotions" = $1, 
-        "Diary_Mood" = $2, 
-        "Diary_Description" = $3,  
-        "Diary_Images" = $4 
-    WHERE "Diary_Date" = $5 
+    UPDATE "DIARY"
+    SET "Diary_Emotions" = $1,
+        "Diary_Mood" = $2,
+        "Diary_Description" = $3,
+        "Diary_Images" = $4
+    WHERE "Diary_Date" = $5
     AND "User_Id" = $6`,
 		emotionsArrayU, req.Mood, req.Description, imagesArray, date, req.UserID)
 
