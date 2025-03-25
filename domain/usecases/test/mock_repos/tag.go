@@ -1,13 +1,12 @@
-package mockrepos
+package mock_repos
 
 import (
 	"context"
 
-	"github.com/stretchr/testify/mock"
-	"github.com/kritpi/arom-web-services/domain/requests"
 	"github.com/kritpi/arom-web-services/domain/models"
+	"github.com/kritpi/arom-web-services/domain/requests"
+	"github.com/stretchr/testify/mock"
 )
-
 
 type MockTagRepo struct {
 	mock.Mock
@@ -60,5 +59,3 @@ func (m *MockTagRepo) Update(ctx context.Context, req *requests.UpdateTagRequest
 
 	return ret.Error(0)
 }
-
-
