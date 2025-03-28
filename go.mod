@@ -4,6 +4,7 @@ go 1.23.2
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.5
+	go.uber.org/mock v0.5.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
 
@@ -34,6 +35,7 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.5.0
 	github.com/jackc/pgx/v5 v5.7.1
