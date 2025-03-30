@@ -16,7 +16,9 @@ import (
 	"github.com/kritpi/arom-web-services/domain/usecases"
 	"github.com/kritpi/arom-web-services/internal/adapters/pg"
 	"github.com/kritpi/arom-web-services/internal/adapters/rest"
+	"github.com/kritpi/arom-web-services/internal/infrastrutures/mailer"
 	_ "github.com/lib/pq"
+	"gopkg.in/gomail.v2"
 )
 
 func main() {
@@ -30,10 +32,24 @@ func main() {
 	}
 	defer db.Close()
 
+	// Init mailer
+	messageClient := gomail.NewMessage()
+	dialer := gomail.NewDialer(cfg.SMTP_HOST, cfg.SMTP_PORT, cfg.EMAIL_FROM, cfg.EMAIL_PASSWORD)
+	// Set up the dialer to use SSL and TLS
+	// dialer.SSL = true
+	// dialer.TLSConfig = &tls.Config{
+	// 	InsecureSkipVerify: true,
+	// 	ServerName: cfg.SMTP_HOST,
+	// }
+	mailerClient := mailer.NewMailer(dialer,messageClient, cfg)
+
+
+
+
 	// Set up Fiber app
 	app := fiber.New()
 	setupMiddleware(app)
-	setupRoutes(app, db, cfg)
+	setupRoutes(app, db, cfg, mailerClient)
 
 	// Start server with graceful shutdown
 	startServer(app)
@@ -61,18 +77,8 @@ func setupMiddleware(app *fiber.App) {
 	}))
 }
 
-func setupRoutes(app *fiber.App, db *sqlx.DB, cfg *configs.Config) {
+func setupRoutes(app *fiber.App, db *sqlx.DB, cfg *configs.Config, mailerClient mailer.Mailer) {
 	// Repositories and Use Cases
-
-	// Event Repo
-	eventRepo := pg.NewEventPGRepository(db)
-	eventService := usecases.ProvideEventService(eventRepo, cfg)
-	eventHandler := rest.NewEventHandler(eventService)
-
-	// Diary Repo
-	diaryRepo := pg.NewDiaryPGRepository(db)
-	diaryService := usecases.ProvideDiaryService(diaryRepo, cfg)
-	diaryHandler := rest.NewDiaryHandler(diaryService)
 
 	// User Repo
 	userRepo := pg.NewUserPGRepository(db)
@@ -80,20 +86,33 @@ func setupRoutes(app *fiber.App, db *sqlx.DB, cfg *configs.Config) {
 	userUsecase := usecases.ProvideUserService(userRepo, cfg)
 	userHandler := rest.NewUserHandler(userUsecase)
 
-	
+	// Event Repo
+	eventRepo := pg.NewEventPGRepository(db)
+	eventService := usecases.ProvideEventService(eventRepo, userRepo, cfg, mailerClient)
+	eventHandler := rest.NewEventHandler(eventService)
+
+	// Diary Repo
+	diaryRepo := pg.NewDiaryPGRepository(db)
+	diaryService := usecases.ProvideDiaryService(diaryRepo, cfg)
+	diaryHandler := rest.NewDiaryHandler(diaryService)
+
+	//Tag Repo
+	tagRepo := pg.NewTagPGRepository(db)
+	tagService := usecases.ProvideTagService(tagRepo, cfg)
+	tagHandler := rest.NewTagHandler(tagService)
 
 	// Routes
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World! test test")
 	})
-	
+
 	// Event Routes
 	app.Post(`/event`, eventHandler.CreateEvent)
 	app.Get(`/event`, eventHandler.GetAllEvent)
 	app.Get(`/event/:id`, eventHandler.GetByIDEvent)
 	app.Get(`/event/user/:id`, eventHandler.GetByUserIDEvent)
 	app.Patch(`/event/:id`, eventHandler.UpdateEvent)
-
+	app.Patch(`/event/status/:id`,eventHandler.UpdateStatusEvent)
 
 	// Diary Routes
 	app.Post(`/diary`, diaryHandler.CreateDiary)
@@ -102,6 +121,13 @@ func setupRoutes(app *fiber.App, db *sqlx.DB, cfg *configs.Config) {
 	app.Get(`/diary/:id`, diaryHandler.GetDiaryByID)
 	app.Get(`/diary/user/:userID`, diaryHandler.GetDiaryByUserID)
 	app.Put(`/diary/:date`, diaryHandler.UpdateDiary)
+
+	// Tag Routes
+	app.Post(`/tag`, tagHandler.CreateTag)
+	app.Get(`/tag/:id`, tagHandler.GetByIDTag)
+	app.Get(`/tag/user/:id`, tagHandler.GetByUserIDTag)
+	app.Patch(`/tag/:id`, tagHandler.UpdateTag)
+	app.Delete(`/tag/:id`, tagHandler.DeleteTag)
 
 	// User Routes
 	app.Post("/user/register", userHandler.Register) //todo: Insert Successfully but there's error catched ["error": "sql: no rows in result set"]
