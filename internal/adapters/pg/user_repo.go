@@ -1,20 +1,20 @@
 package pg
 
 import (
-	"context"
-	"log"
 	"bytes"
-  "fmt"
-  "io"
-  "mime/multipart"
-  "net/http"
+	"context"
+	"fmt"
+	"io"
+	"log"
+	"mime/multipart"
+	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/kritpi/arom-web-services/configs"
 	"github.com/kritpi/arom-web-services/domain/models"
 	"github.com/kritpi/arom-web-services/domain/repositories"
 	"github.com/kritpi/arom-web-services/domain/requests"
-	"github.com/kritpi/arom-web-services/configs"
 )
 
 type UserPGRepository struct {
@@ -67,12 +67,13 @@ func (u *UserPGRepository) CreateUser(ctx context.Context, user *models.User) (*
 	user.ID = uuid.New()
 	err := u.db.QueryRowContext(
 		ctx,
-		`INSERT INTO users (id, username, password, profile_image) VALUES ($1, $2, $3, $4) RETURNING id, username, password, profile_image;`,
+		`INSERT INTO users (id, username, password, email, profile_image) VALUES ($1, $2, $3, $4, $5) RETURNING id, username, password, email, profile_image;`,
 		user.ID,
 		user.Username,
 		user.Password,
+		user.Email,
 		user.ProfileImage,
-	).Scan(&user.ID, &user.Username, &user.Password, &user.ProfileImage)
+	).Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.ProfileImage)
 
 	if err != nil {
 		// Log the UUID and error for debugging
@@ -88,9 +89,24 @@ func (u *UserPGRepository) GetUserByUsername(ctx context.Context, req *requests.
 	var user models.User
 	err := u.db.QueryRowContext(
 		ctx,
-		`SELECT id, username, password, profile_image FROM users WHERE username = $1`,
+		`SELECT id, username, password, email, profile_image FROM users WHERE username = $1`,
 		req.Username,
-	).Scan(&user.ID, &user.Username, &user.Password, &user.ProfileImage)
+	).Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.ProfileImage)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// Get User by UserID
+func (u *UserPGRepository) GetUserByUserID(ctx context.Context, req *requests.SendEmailRequest) (*models.User, error) {
+	var user models.User
+
+	err := u.db.QueryRowContext(
+		ctx,
+		`SELECT id, username, password, email, profile_image FROM users WHERE id = $1`,
+		req.ID,
+	).Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.ProfileImage)
 	if err != nil {
 		return nil, err
 	}
